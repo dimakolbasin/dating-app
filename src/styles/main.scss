@@ -1,0 +1,32 @@
+$color-text: #3A3A3A;
+$color-white: #FFFFFF;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+html, body {
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  background: $color-white;
+  color: $color-text;
+  overflow: auto;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+}

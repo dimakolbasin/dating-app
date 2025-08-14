@@ -1,0 +1,44 @@
+@use 'sass:math';
+
+$landscape-media: '(orientation: landscape)';
+$portrait-media: '(orientation: portrait)';
+
+$_landscape-width: 1920;
+$_landscape-height: 1080;
+
+$_portrait-width: 320;
+$_portrait-height: 676;
+
+@function adaptive-size($value, $width, $height) {
+  @return min(calc(#{$value} / #{$width} * 100svw), calc(#{$value} / #{$height} * 100svh));
+}
+
+@function _font-responsive-calc($font-size, $line-height) {
+  @return (font-size: $font-size, line-height: $line-height);
+}
+
+@function _adaptive-size-negative($value, $width, $height) {
+  @return max(calc(#{$value} / #{$width} * 100svw), calc(#{$value} / #{$height} * 100svh));
+}
+
+@mixin font-responsive($font-size, $line-height) {
+  $calc-values: _font-responsive-calc($font-size, $line-height);
+  font-size: map-get($calc-values, font-size);
+  line-height: map-get($calc-values, line-height);
+}
+
+@function portrait-size($value) {
+  @return adaptive-size($value, $_portrait-width, $_portrait-height);
+}
+
+@function portrait-size-negative($value) {
+  @return _adaptive-size-negative($value, $_portrait-width, $_portrait-height);
+}
+
+@function landscape-size($value) {
+  @return adaptive-size($value, $_landscape-width, $_landscape-height);
+}
+
+@function landscape-size-negative($value) {
+  @return _adaptive-size-negative($value, $_landscape-width, $_landscape-height);
+}

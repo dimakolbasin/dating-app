@@ -1,5 +1,7 @@
 # Dating App
 
+## Work demo - https://dimakolbasin.github.io/dating-app/
+
 ## Prerequisites
 
 Before running this project, ensure you have the following installed:

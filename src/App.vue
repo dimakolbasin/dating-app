@@ -124,6 +124,7 @@ $font-weight-semibold: 600;
   &__community {
     width: auto;
     object-fit: contain;
+    aspect-ratio: 568 / 538;
   }
 
   &__guide {

@@ -137,51 +137,72 @@ watch(password, (v) => {
   errors.password = isStrongPassword(v) ? '' : (v ? 'Password must contain exactly 8 characters.' : '');
 });
 
+async function tryLogin(email: string, password: string): Promise<string | null> {
+  const basic = btoa(`${email}:${password}`);
+  const response = await fetch(API_IDENTITY_URL, {
+    method: 'GET',
+    headers: {
+      Authorization: `Basic ${basic}`,
+      Accept: 'application/json',
+    },
+    mode: 'cors',
+    credentials: 'omit',
+  });
+
+  if (response.ok) {
+    return response.headers.get('X-Token');
+  }
+
+  return null;
+}
+
+async function tryRegister(email: string, password: string): Promise<{ token: string | null; error?: string }> {
+  const response = await fetch(API_IDENTITY_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+    mode: 'cors',
+    credentials: 'omit',
+  });
+
+  if (response.ok) {
+    return { token: response.headers.get('X-Token') };
+  }
+
+  try {
+    const data = await response.json();
+    return { token: null, error: data?.message || 'Registration failed. Please try again.' };
+  } catch {
+    return { token: null, error: 'Registration failed. Please try again.' };
+  }
+}
+
+function setError(message: string) {
+  formError.value = message;
+}
+
 async function onSubmit() {
   if (!validate()) return;
+
   loading.value = true;
   try {
-    const basic = btoa(`${email.value}:${password.value}`);
-    const getResp = await fetch(API_IDENTITY_URL, {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${basic}`,
-        Accept: 'application/json',
-      },
-      mode: 'cors',
-      credentials: 'omit',
-    });
-
-    if (getResp.ok) {
-      const token = getResp.headers.get('X-Token');
-      emit('success', token);
+    const loginToken = await tryLogin(email.value, password.value);
+    if (loginToken) {
+      emit('success', loginToken);
       return;
     }
 
-    const putResp = await fetch(API_IDENTITY_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ email: email.value, password: password.value }),
-      mode: 'cors',
-      credentials: 'omit',
-    });
-
-    if (putResp.ok) {
-      const token = putResp.headers.get('X-Token');
-      emit('success', token);
-    } else {
-      try {
-        const data = await putResp.json();
-        formError.value = data?.message || 'Registration failed. Please try again.';
-      } catch {
-        formError.value = 'Registration failed. Please try again.';
-      }
+    const { token: registerToken, error } = await tryRegister(email.value, password.value);
+    if (registerToken) {
+      emit('success', registerToken);
+    } else if (error) {
+      setError(error);
     }
-  } catch (e) {
-    formError.value = 'Network error. Please try again later.';
+  } catch {
+    setError('Network error. Please try again later.');
   } finally {
     loading.value = false;
   }
